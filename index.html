@@ -23,30 +23,30 @@
         .logo {
             max-width: 220px;
         }
-        h1 { /* Este h1 está vazio no seu HTML, pode ser removido ou usado para um subtítulo */
+        h1 {
             margin-top: 10px;
             color: #d28594;
         }
         /* Estilos para o título do produto e botões de opção */
         .produto-header {
-            background-color: rgba(69,73,156,0.85); /* Cor de fundo do seu .curiosidades */
-            margin: 20px auto; /* Centraliza e adiciona margem */
-            max-width: 600px; /* Limita a largura */
+            background-color: rgba(69,73,156,0.85);
+            margin: 20px auto;
+            max-width: 600px;
             padding: 20px;
             border-radius: 12px;
-            color: white; /* Garante que o texto seja branco */
+            color: white;
         }
         .produto-header h2 {
             margin-top: 0;
-            margin-bottom: 15px; /* Espaço entre título e botões */
+            margin-bottom: 15px;
             font-size: 1.8em;
         }
         .botoes-opcoes-container {
-            margin-bottom: 15px; /* Espaço entre os botões e o viewer */
+            margin-bottom: 15px;
         }
         .botoes-opcoes-container button {
-            background-color: #fac79c; /* Cor rosa claro para os botões */
-            color: #4a235a; /* Cor do texto dos botões */
+            background-color: #f7a6b6;
+            color: #4a235a;
             border: none;
             padding: 10px 20px;
             margin: 0 5px;
@@ -57,10 +57,10 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         .botoes-opcoes-container button:hover {
-            background-color: #ddcba5; /* Rosa um pouco mais escuro no hover */
+            background-color: #e98a9c;
         }
         .botoes-opcoes-container button.active {
-            background-color: #ddcba5; /* Rosa mais escuro para o botão ativo */
+            background-color: #d28594;
             color: white;
         }
 
@@ -106,7 +106,7 @@
             background-color: rgba(255, 255, 255, 0.9);
             color: #333;
         }
-        .observacoes-container button[type="submit"] { /* Seletor modificado para o botão de submit */
+        .observacoes-container button[type="submit"] {
             background-color: #d28594;
             color: white;
             border: none;
@@ -118,7 +118,21 @@
             transition: background-color 0.3s ease;
         }
         .observacoes-container button[type="submit"]:hover {
-            background-color: #ddcba5;
+            background-color: #b76a7a;
+        }
+        /* Mensagem de status para o formulário */
+        .form-status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .form-status-message.success {
+            background-color: #4CAF50; /* Verde */
+        }
+        .form-status-message.error {
+            background-color: #f44336; /* Vermelho */
         }
     </style>
 </head>
@@ -142,16 +156,18 @@
 
     <div class="observacoes-container">
         <h2>Deixe suas considerações</h2>
-        <form action="https://formspree.io/f/mdkdzdkp" method="POST" id="observacoesForm">
+        <form id="observacoesForm"> 
             <textarea id="campoObservacoes" name="observacao" rows="6" placeholder="Escreva suas observações aqui..." required></textarea>
             
             <input type="hidden" name="modelo_nome" id="modeloNomeHidden">
             <input type="hidden" name="opcao_selecionada" id="opcaoSelecionadaHidden">
 
             <button type="submit">ENVIAR</button>
+            <div id="formStatusMessage" class="form-status-message" style="display: none;"></div>
         </form>
     </div>
-        <script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const modelViewer = document.getElementById('modelViewer');
             const opcao1Btn = document.getElementById('opcao1Btn');
