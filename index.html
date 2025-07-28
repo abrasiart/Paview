@@ -151,7 +151,7 @@
             <button type="submit">ENVIAR</button>
         </form>
     </div>
-    <script>
+        <script>
         document.addEventListener('DOMContentLoaded', () => {
             const modelViewer = document.getElementById('modelViewer');
             const opcao1Btn = document.getElementById('opcao1Btn');
@@ -159,15 +159,13 @@
             const opcao3Btn = document.getElementById('opcao3Btn');
             const botoesOpcao = document.querySelectorAll('.botoes-opcoes-container button');
 
-            // Campos ocultos do formulário Formspree
             const modeloNomeHidden = document.getElementById('modeloNomeHidden');
             const opcaoSelecionadaHidden = document.getElementById('opcaoSelecionadaHidden');
             
-            // --- Gerenciamento de Opções dos Modelos ---
             const models = {
                 'opcao1Btn': 'pck_frutas.glb',
-                'opcao2Btn': 'pck_frutas2.glb', // Exemplo: um modelo de picolé de limão
-                'opcao3Btn': 'pck_frutas3.glb'   // Exemplo: um modelo de picolé de uva
+                'opcao2Btn': 'pck_limao.glb',
+                'opcao3Btn': 'pck_uva.glb'
             };
 
             function setActiveOption(buttonId) {
@@ -177,34 +175,67 @@
                     currentButton.classList.add('active');
                     modelViewer.src = models[buttonId];
 
-                    // Atualiza os campos ocultos com as informações do modelo atual
-                    modeloNomeHidden.value = modelViewer.src.split('/').pop(); // Nome do arquivo GLB
-                    opcaoSelecionadaHidden.value = currentButton.textContent; // Texto do botão (ex: OPÇÃO 1)
+                    modeloNomeHidden.value = modelViewer.src.split('/').pop();
+                    opcaoSelecionadaHidden.value = currentButton.textContent;
                 }
             }
 
-            // Adiciona event listeners para os botões de opção
             opcao1Btn.addEventListener('click', () => setActiveOption('opcao1Btn'));
             opcao2Btn.addEventListener('click', () => setActiveOption('opcao2Btn'));
             opcao3Btn.addEventListener('click', () => setActiveOption('opcao3Btn'));
 
-            // Define a opção 1 como ativa por padrão ao carregar a página
             setActiveOption('opcao1Btn');
 
-            // --- Gerenciamento do Formulário Formspree ---
+            // --- Gerenciamento do Formulário Formspree com AJAX ---
             const observacoesForm = document.getElementById('observacoesForm');
             const campoObservacoes = document.getElementById('campoObservacoes');
+            const formStatusMessage = document.getElementById('formStatusMessage'); // O novo elemento de mensagem
 
-            // Desativa o comportamento padrão do botão ENVIAR se o campo estiver vazio
-            observacoesForm.addEventListener('submit', (event) => {
+            // Função para exibir mensagem de status
+            function showStatusMessage(message, type) {
+                formStatusMessage.textContent = message;
+                formStatusMessage.className = 'form-status-message ' + type;
+                formStatusMessage.style.display = 'block';
+                // Opcional: esconder a mensagem após alguns segundos
+                setTimeout(() => {
+                    formStatusMessage.style.display = 'none';
+                }, 5000); // Esconde após 5 segundos
+            }
+
+            observacoesForm.addEventListener('submit', async (event) => {
+                event.preventDefault(); // IMPEDE O COMPORTAMENTO PADRÃO DE RECARREGAR A PÁGINA
+
                 if (campoObservacoes.value.trim() === '') {
-                    event.preventDefault(); // Impede o envio do formulário
-                    alert('Por favor, digite suas observações antes de enviar.');
-                } else {
-                    // O Formspree irá lidar com o envio automaticamente
-                    // Você pode adicionar um feedback visual aqui se quiser
-                    alert('Suas observações estão sendo enviadas! Obrigado pelo seu feedback.');
-                    campoObservacoes.value = ''; // Limpa o campo após o envio
+                    showStatusMessage('Por favor, digite suas observações antes de enviar.', 'error');
+                    return;
+                }
+
+                const formData = new FormData(observacoesForm); // Coleta todos os dados do formulário
+                
+                try {
+                    const response = await fetch('https://formspree.io/f/mdkdzdkp', {
+                        method: 'POST',
+                        body: formData, // Envia o FormData
+                        headers: {
+                            'Accept': 'application/json' // Importante para o Formspree responder com JSON para AJAX
+                        }
+                    });
+
+                    if (response.ok) { // Verifica se a resposta foi um sucesso (status 2xx)
+                        showStatusMessage('Observações enviadas com sucesso! Obrigado pelo seu feedback.', 'success');
+                        campoObservacoes.value = ''; // Limpa o campo
+                    } else {
+                        // Trata erros específicos do Formspree ou outros erros HTTP
+                        const data = await response.json();
+                        if (data.errors) {
+                            showStatusMessage('Erro ao enviar: ' + data.errors.map(err => err.message).join(', '), 'error');
+                        } else {
+                            showStatusMessage('Ocorreu um erro ao enviar as observações. Por favor, tente novamente.', 'error');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro de rede ou envio:', error);
+                    showStatusMessage('Erro de conexão. Por favor, verifique sua internet e tente novamente.', 'error');
                 }
             });
         });
