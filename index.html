@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Visualizador 3D Paviloche</title> <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <title>Visualizador 3D Paviloche</title>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -44,7 +45,7 @@
             margin-bottom: 15px; /* Espaço entre os botões e o viewer */
         }
         .botoes-opcoes-container button {
-            background-color: #ddcba5; /* Cor rosa claro para os botões */
+            background-color: #f7a6b6; /* Cor rosa claro para os botões */
             color: #4a235a; /* Cor do texto dos botões */
             border: none;
             padding: 10px 20px;
@@ -56,58 +57,57 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         .botoes-opcoes-container button:hover {
-            background-color: #fac79c; /* Rosa um pouco mais escuro no hover */
+            background-color: #e98a9c; /* Rosa um pouco mais escuro no hover */
         }
         .botoes-opcoes-container button.active {
-            background-color: #fac79c; /* Rosa mais escuro para o botão ativo */
+            background-color: #d28594; /* Rosa mais escuro para o botão ativo */
             color: white;
         }
 
         /* Estilos do visualizador 3D */
         .viewer-container {
             margin: 30px auto;
-            max-width: 600px; /* Aumentei um pouco para caber os botões talvez */
+            max-width: 600px;
             height: 500px;
-            background-color: transparent; /* Apenas para garantir que não tenha fundo extra */
+            background-color: transparent;
         }
         model-viewer {
             width: 100%;
             height: 100%;
             background-color: transparent;
-            /* Remover background-color aqui, já que está no body ou usar o bg da cena */
-            --background-color: transparent; /* Certifica que o bg do viewer é transparente */
+            --background-color: transparent;
         }
 
         /* Estilos para o novo formulário de observações */
         .observacoes-container {
             margin: 40px auto;
-            max-width: 600px; /* Mesma largura do container do produto */
-            background-color: rgba(69,73,156,0.85); /* Mesma cor do seu .curiosidades */
+            max-width: 600px;
+            background-color: rgba(69,73,156,0.85);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-align: center;
-            color: white; /* Garante texto branco */
+            color: white;
         }
         .observacoes-container h2 {
-            color: white; /* Título branco */
+            color: white;
             margin-top: 0;
             margin-bottom: 15px;
             font-size: 1.5em;
         }
         .observacoes-container textarea {
-            width: calc(100% - 20px); /* Ocupa a largura total com padding */
+            width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 1em;
-            resize: vertical; /* Permite redimensionar verticalmente */
-            background-color: rgba(255, 255, 255, 0.9); /* Fundo claro para o texto */
-            color: #333; /* Cor do texto digitado */
+            resize: vertical;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
         }
-        .observacoes-container button {
-            background-color: #4a235a; /* Cor do seu botão 'enviar' */
+        .observacoes-container button[type="submit"] { /* Seletor modificado para o botão de submit */
+            background-color: #d28594;
             color: white;
             border: none;
             padding: 12px 25px;
@@ -117,22 +117,15 @@
             font-weight: bold;
             transition: background-color 0.3s ease;
         }
-        .observacoes-container button:hover {
-            background-color: #b76a7a; /* Cor no hover */
-        }
-
-        /* Removido o .curiosidades antigo e o .formulario */
-        .curiosidades p { /* Este parágrafo está vazio, pode ser removido ou usado */
-            display: none; /* Esconde se não for usado */
-        }
-        audio {
-            margin-top: 20px;
+        .observacoes-container button[type="submit"]:hover {
+            background-color: #b76a7a;
         }
     </style>
 </head>
 <body>
     <header>
-        <img src="logo.png" alt="Logo Paviloche" class="logo"/> </header>
+        <img src="logo.png" alt="Logo Paviloche" class="logo"/>
+    </header>
 
     <div class="produto-header">
         <h2>Caixa Multipack Picolés Frutas</h2>
@@ -140,7 +133,7 @@
             <button id="opcao1Btn" class="active">OPÇÃO 1</button>
             <button id="opcao2Btn">OPÇÃO 2</button>
             <button id="opcao3Btn">OPÇÃO 3</button>
-            </div>
+        </div>
     </div>
 
     <div class="viewer-container">
@@ -149,10 +142,15 @@
 
     <div class="observacoes-container">
         <h2>Deixe suas considerações</h2>
-        <textarea id="campoObservacoes" rows="6" placeholder="Escreva suas observações aqui..."></textarea>
-        <button id="enviarObservacoes">ENVIAR</button>
-    </div>
+        <form action="https://formspree.io/f/mdkdzdkp" method="POST" id="observacoesForm">
+            <textarea id="campoObservacoes" name="observacao" rows="6" placeholder="Escreva suas observações aqui..." required></textarea>
+            
+            <input type="hidden" name="modelo_nome" id="modeloNomeHidden">
+            <input type="hidden" name="opcao_selecionada" id="opcaoSelecionadaHidden">
 
+            <button type="submit">ENVIAR</button>
+        </form>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const modelViewer = document.getElementById('modelViewer');
@@ -161,24 +159,27 @@
             const opcao3Btn = document.getElementById('opcao3Btn');
             const botoesOpcao = document.querySelectorAll('.botoes-opcoes-container button');
 
+            // Campos ocultos do formulário Formspree
+            const modeloNomeHidden = document.getElementById('modeloNomeHidden');
+            const opcaoSelecionadaHidden = document.getElementById('opcaoSelecionadaHidden');
+            
             // --- Gerenciamento de Opções dos Modelos ---
-            // Mapeie os botões para os caminhos dos seus arquivos GLB
-            // ATENÇÃO: Você precisa ter esses arquivos GLB (pck_frutas.glb, pck_limao.glb, pck_uva.glb, etc.)
-            // no mesmo diretório do seu HTML ou especificar o caminho completo.
             const models = {
-                'opcao1Btn': 'pck_frutas.glb', // Modelo padrão ou o primeiro
-                'opcao2Btn': 'pck_frutas2.glb', // Exemplo: um modelo de picolé de limão
-                'opcao3Btn': 'pck_frutas3.glb'   // Exemplo: um modelo de picolé de uva
-                // Adicione mais aqui se tiver mais opções
+                'opcao1Btn': 'pck_frutas.glb',
+                'opcao2Btn': 'pck_limao.glb', // Exemplo: um modelo de picolé de limão
+                'opcao3Btn': 'pck_uva.glb'   // Exemplo: um modelo de picolé de uva
             };
 
-            // Função para ativar o botão selecionado e mudar o modelo
             function setActiveOption(buttonId) {
-                botoesOpcao.forEach(btn => btn.classList.remove('active')); // Remove 'active' de todos
+                botoesOpcao.forEach(btn => btn.classList.remove('active'));
                 const currentButton = document.getElementById(buttonId);
                 if (currentButton) {
-                    currentButton.classList.add('active'); // Adiciona 'active' ao clicado
-                    modelViewer.src = models[buttonId]; // Altera a fonte do model-viewer
+                    currentButton.classList.add('active');
+                    modelViewer.src = models[buttonId];
+
+                    // Atualiza os campos ocultos com as informações do modelo atual
+                    modeloNomeHidden.value = modelViewer.src.split('/').pop(); // Nome do arquivo GLB
+                    opcaoSelecionadaHidden.value = currentButton.textContent; // Texto do botão (ex: OPÇÃO 1)
                 }
             }
 
@@ -190,47 +191,21 @@
             // Define a opção 1 como ativa por padrão ao carregar a página
             setActiveOption('opcao1Btn');
 
-            // --- Gerenciamento do Campo de Observações ---
+            // --- Gerenciamento do Formulário Formspree ---
+            const observacoesForm = document.getElementById('observacoesForm');
             const campoObservacoes = document.getElementById('campoObservacoes');
-            const enviarObservacoesBtn = document.getElementById('enviarObservacoes');
 
-            enviarObservacoesBtn.addEventListener('click', () => {
-                const observacoes = campoObservacoes.value;
-
-                if (observacoes.trim() === '') {
+            // Desativa o comportamento padrão do botão ENVIAR se o campo estiver vazio
+            observacoesForm.addEventListener('submit', (event) => {
+                if (campoObservacoes.value.trim() === '') {
+                    event.preventDefault(); // Impede o envio do formulário
                     alert('Por favor, digite suas observações antes de enviar.');
-                    return;
+                } else {
+                    // O Formspree irá lidar com o envio automaticamente
+                    // Você pode adicionar um feedback visual aqui se quiser
+                    alert('Suas observações estão sendo enviadas! Obrigado pelo seu feedback.');
+                    campoObservacoes.value = ''; // Limpa o campo após o envio
                 }
-
-                // AQUI É ONDE VOCÊ DECIDE COMO ENVIARÁ OS DADOS.
-                // Opção 1 (Recomendado): Usar um serviço de backend ou um serviço de formulário (Formspree, Netlify Forms, etc.)
-                // para enviar essas observações para você (ex: por email ou para um painel).
-
-                // Exemplo com Formspree (você precisaria envolver o textarea e o botão em um <form>):
-                /*
-                const form = document.createElement('form');
-                form.action = "https://formspree.io/f/SUA_CHAVE_DO_FORMSPREE"; // Substitua pela sua chave do Formspree
-                form.method = "POST";
-                form.innerHTML = `<input type="hidden" name="observacao" value="${observacoes}">
-                                  <input type="hidden" name="modelo_atual" value="${modelViewer.src}">
-                                  <input type="hidden" name="opcao_selecionada" value="${document.querySelector('.botoes-opcoes-container button.active').textContent}">
-                                  <button type="submit" style="display:none;"></button>`;
-                document.body.appendChild(form);
-                form.submit();
-                document.body.removeChild(form); // Remove o formulário após o envio
-                alert('Observações enviadas com sucesso! Obrigado pelo seu feedback.');
-                campoObservacoes.value = ''; // Limpa o campo
-                */
-
-                // Opção 2 (Menos profissional, mas mais simples se não tiver backend): Abrir cliente de e-mail.
-                // Isso requer que o usuário tenha um cliente de e-mail configurado no dispositivo.
-                const modeloAtual = modelViewer.src.split('/').pop(); // Pega o nome do arquivo GLB
-                const opcaoSelecionada = document.querySelector('.botoes-opcoes-container button.active').textContent;
-                const emailBody = `Observações: ${observacoes}\n\nModelo: ${modeloAtual}\nOpção: ${opcaoSelecionada}`;
-                window.location.href = `mailto:marketing2@paviloche.com.br?subject=Observações sobre Mockup 3D - Paviloche&body=${encodeURIComponent(emailBody)}`;
-
-                alert('As observações foram enviadas para o seu cliente de e-mail. Por favor, envie o e-mail para nós.');
-                campoObservacoes.value = ''; // Limpa o campo após o "envio" (abertura do e-mail)
             });
         });
     </script>
